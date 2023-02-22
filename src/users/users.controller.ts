@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 
 import {
@@ -23,6 +24,8 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserEntity } from './entities/user.entity';
 
+import { JwtAuthGuard } from './../auth/strategies/jwt-auth.guard';
+
 const notFoundResponseSchema: ApiResponseOptions = {
   schema: {
     example: {
@@ -34,6 +37,7 @@ const notFoundResponseSchema: ApiResponseOptions = {
 };
 
 @ApiTags('users')
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
