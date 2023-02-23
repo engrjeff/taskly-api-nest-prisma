@@ -1,3 +1,4 @@
+import { comparePasswords } from './utils/auth.utils';
 import { User } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { UsersService } from './../users/users.service';
@@ -17,7 +18,10 @@ export class AuthService {
     pass: string,
   ): Promise<UserWithoutPassword | null> {
     const user = await this.usersService.getUser({ where: { email } });
-    if (user && user.password === pass) {
+    // validate password
+    const passwordsMatch = await comparePasswords(pass, user.password);
+
+    if (user && passwordsMatch) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...result } = user;
       return result;

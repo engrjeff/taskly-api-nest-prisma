@@ -22,9 +22,19 @@ import {
 
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
 
+import { hashPassword } from './../auth/utils/auth.utils';
 import { JwtAuthGuard } from './../auth/strategies/jwt-auth.guard';
+
+// a helper function for removing a property from an object
+function exlude<T, Key extends keyof T>(data: T, keys: Key[]): Omit<T, Key> {
+  for (const key of keys) {
+    delete data[key];
+  }
+  return data;
+}
 
 const notFoundResponseSchema: ApiResponseOptions = {
   schema: {
@@ -45,15 +55,22 @@ export class UsersController {
   @Get()
   @ApiOkResponse({ type: UserEntity, isArray: true })
   async getUsers() {
-    return this.usersService.getUsers();
+    const users = await this.usersService.getUsers();
+    return users.map((u) => exlude(u, ['password']));
   }
 
   @Post()
   @ApiCreatedResponse({ type: UserEntity })
   async createUser(@Body() userData: CreateUserDto) {
-    const newUser = await this.usersService.createUser(userData);
+    // hash the password
+    const hashedPassword = await hashPassword(userData.password);
 
-    return newUser;
+    const newUser = await this.usersService.createUser({
+      ...userData,
+      password: hashedPassword,
+    });
+
+    return exlude(newUser, ['password']);
   }
 
   @Get(':id')
@@ -66,7 +83,7 @@ export class UsersController {
 
     if (!user) throw new NotFoundException('User not found');
 
-    return user;
+    return exlude(user, ['password']);
   }
 
   @Patch(':id')
@@ -74,7 +91,7 @@ export class UsersController {
   @ApiNotFoundResponse(notFoundResponseSchema)
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body() userData: CreateUserDto,
+    @Body() userData: UpdateUserDto,
   ) {
     const user = await this.usersService.getUser({
       where: { id },
@@ -84,7 +101,7 @@ export class UsersController {
 
     const updatedUser = await this.usersService.updateUser(id, userData);
 
-    return updatedUser;
+    return exlude(updatedUser, ['password']);
   }
 
   @Delete(':id')
