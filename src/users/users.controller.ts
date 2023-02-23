@@ -18,6 +18,7 @@ import {
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiResponseOptions,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
@@ -27,14 +28,7 @@ import { UserEntity } from './entities/user.entity';
 
 import { hashPassword } from './../auth/utils/auth.utils';
 import { JwtAuthGuard } from './../auth/strategies/jwt-auth.guard';
-
-// a helper function for removing a property from an object
-function exlude<T, Key extends keyof T>(data: T, keys: Key[]): Omit<T, Key> {
-  for (const key of keys) {
-    delete data[key];
-  }
-  return data;
-}
+import { exlude } from '../lib';
 
 const notFoundResponseSchema: ApiResponseOptions = {
   schema: {
@@ -47,6 +41,7 @@ const notFoundResponseSchema: ApiResponseOptions = {
 };
 
 @ApiTags('users')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {

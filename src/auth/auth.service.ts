@@ -1,10 +1,11 @@
-import { comparePasswords } from './utils/auth.utils';
-import { User } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
-import { UsersService } from './../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 
-type UserWithoutPassword = Omit<User, 'password'>;
+import { comparePasswords, hashPassword } from './utils/auth.utils';
+import { UsersService } from './../users/users.service';
+import { UserWithoutPassword } from './../users/entities/user.entity';
+import { CreateUserDto } from './../users/dto/create-user.dto';
+import { exlude } from '../lib';
 
 @Injectable()
 export class AuthService {
@@ -22,9 +23,7 @@ export class AuthService {
     const passwordsMatch = await comparePasswords(pass, user.password);
 
     if (user && passwordsMatch) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...result } = user;
-      return result;
+      return exlude(user, ['password']);
     }
     return null;
   }
@@ -34,5 +33,17 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
     };
+  }
+
+  async signup(user: CreateUserDto) {
+    // hash the password
+    const hashedPassword = await hashPassword(user.password);
+
+    const newUser = await this.usersService.createUser({
+      ...user,
+      password: hashedPassword,
+    });
+
+    return exlude(newUser, ['password']);
   }
 }

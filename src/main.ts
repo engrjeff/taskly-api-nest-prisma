@@ -19,12 +19,14 @@ async function bootstrap() {
     .setTitle('Taskly API')
     .setDescription('A sample API for managing tasks')
     .setVersion('1.0')
-    .addTag('users')
+    .addBearerAuth()
     .build();
 
   const swaggerDoc = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup('api', app, swaggerDoc);
+  SwaggerModule.setup('api', app, swaggerDoc, {
+    customSiteTitle: 'Taskly API by Jeff Segovia',
+  });
 
   await app.listen(process.env.PORT || 3000);
 }
