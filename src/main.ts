@@ -19,6 +19,11 @@ async function bootstrap() {
     .setTitle('Taskly API')
     .setDescription('A sample API for managing tasks')
     .setVersion('1.0')
+    .setContact(
+      'Jeff Segovia',
+      'https://jeffsegovia.dev',
+      'jeffsegoviadev@gmail.com',
+    )
     .addBearerAuth()
     .build();
 

@@ -19,6 +19,7 @@ import {
   ApiNotFoundResponse,
   ApiResponseOptions,
   ApiBearerAuth,
+  ApiOperation,
 } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
@@ -48,13 +49,35 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get All Users' })
   @ApiOkResponse({ type: UserEntity, isArray: true })
   async getUsers() {
     const users = await this.usersService.getUsers();
     return users.map((u) => exlude(u, ['password']));
   }
 
+  @Get(':id/tasks')
+  @ApiOperation({ summary: 'Get Tasks of a User' })
+  @ApiOkResponse({ type: UserEntity, isArray: true })
+  async getUserTasks(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.usersService.getUser({
+      where: { id },
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const userTasks = await this.usersService.getUser({
+      where: { id },
+      select: {
+        tasks: true,
+      },
+    });
+
+    return userTasks;
+  }
+
   @Post()
+  @ApiOperation({ summary: 'Create User' })
   @ApiCreatedResponse({ type: UserEntity })
   async createUser(@Body() userData: CreateUserDto) {
     // hash the password
@@ -69,6 +92,7 @@ export class UsersController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a User by Id' })
   @ApiOkResponse({ type: UserEntity })
   @ApiNotFoundResponse(notFoundResponseSchema)
   async getUserById(@Param('id', ParseIntPipe) id: number) {
@@ -82,6 +106,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a user' })
   @ApiOkResponse({ type: UserEntity })
   @ApiNotFoundResponse(notFoundResponseSchema)
   async updateUser(
@@ -100,6 +125,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a user' })
   @ApiNoContentResponse()
   @ApiNotFoundResponse(notFoundResponseSchema)
   async deleteUser(@Param('id', ParseIntPipe) id: number) {

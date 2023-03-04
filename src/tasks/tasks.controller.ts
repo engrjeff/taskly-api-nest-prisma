@@ -17,6 +17,7 @@ import {
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -40,6 +41,7 @@ export class TasksController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a Task' })
   @ApiCreatedResponse({ type: TaskEntity })
   async create(@Body() createTaskDto: CreateTaskDto) {
     const foundUser = await this.usersService.getUser({
@@ -52,6 +54,7 @@ export class TasksController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get Tasks' })
   @ApiQuery({ name: 'status', required: false, type: String, example: 'To Do' })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'offset', required: false, type: Number, example: 1 })
@@ -67,6 +70,7 @@ export class TasksController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get task by Id' })
   @ApiOkResponse({ type: TaskEntity })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const task = await this.tasksService.findOne(id);
@@ -77,6 +81,7 @@ export class TasksController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a task' })
   @ApiOkResponse({ type: TaskEntity })
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -90,6 +95,7 @@ export class TasksController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a task' })
   @ApiNoContentResponse()
   async remove(@Param('id', ParseIntPipe) id: number) {
     const task = await this.tasksService.findOne(id);
